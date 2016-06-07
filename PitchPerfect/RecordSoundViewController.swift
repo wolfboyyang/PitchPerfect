@@ -29,16 +29,6 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
         configUI(.Stopped)
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
-    override func viewWillAppear(animated: Bool) {
-        // do something before the view is visible 
-        // e.g. start animation
-    }
-
     @IBAction func recordAudio(sender: AnyObject) {
         print("record button pressed")
         if audioRecorder == nil {
@@ -96,7 +86,7 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
         // check the flag if the recorder has saved the audio successfully
         if flag {
             // all is done without problem, let's go to the PlaySounds view
-            self.performSegueWithIdentifier("stopRecording", sender: audioRecorder.url)
+            performSegueWithIdentifier("stopRecording", sender: audioRecorder.url)
         } else {
             // not enough space or maybe we don't have the access to the path
             // Need to tell the user try again or check the space

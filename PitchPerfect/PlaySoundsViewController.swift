@@ -36,11 +36,6 @@ class PlaySoundsViewController: UIViewController {
         // set url of the recorded audio file and open
         setupAudio()
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
     
     /*
     // MARK: - Navigation
