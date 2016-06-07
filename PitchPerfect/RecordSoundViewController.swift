@@ -17,10 +17,16 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     
     var audioRecorder:AVAudioRecorder!
     
+    enum RecordingState {
+        case Stopped, Recording, Paused
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        stopRecordingButton.enabled = false
+        
+        // make the buttons in default state: ready to record
+        configUI(.Stopped)
     }
 
     override func didReceiveMemoryWarning() {
@@ -29,49 +35,71 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     }
     
     override func viewWillAppear(animated: Bool) {
-        
+        // do something before the view is visible 
+        // e.g. start animation
     }
 
     @IBAction func recordAudio(sender: AnyObject) {
         print("record button pressed")
+        if audioRecorder == nil {
+            // the fist time record button pressed
+            // begin with open file and setup recorder and start recording
+            
+            // set the state of buttons and the label to in progress state
+            configUI(.Recording)
+            
+            // set the file path to save the audio
+            let dirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory,.UserDomainMask, true)[0] as String
+            let recordingName = "recordedVoice.wav"
+            let pathArray = [dirPath, recordingName]
+            let filePath = NSURL.fileURLWithPathComponents(pathArray)
+            print(filePath)
+            
+            // get the recorder ready to record audio
+            let session = AVAudioSession.sharedInstance()
+            try! session.setCategory(AVAudioSessionCategoryPlayAndRecord)
+            
+            try! audioRecorder = AVAudioRecorder(URL: filePath!, settings: [:])
+            audioRecorder.delegate = self
+            audioRecorder.meteringEnabled = true
+            audioRecorder.prepareToRecord()
+            // Start Recording
+            audioRecorder.record()
+        } else if audioRecorder.recording {
+            // recording in progress, just pause
+            configUI(.Paused)
+            audioRecorder.pause()
+            print("isRecording:\(audioRecorder.recording)")
+        } else {
+            // resume from pause or start a new recording
+            configUI(.Recording)
+            audioRecorder.record()
+            print("isRecording:\(audioRecorder.recording)")
+        }
         
-        recordButton.enabled = false
-        stopRecordingButton.enabled = true
-        recordingLabel.text = "Recording in progress"
-        
-        let dirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory,.UserDomainMask, true)[0] as String
-        let recordingName = "recordedVoice.wav"
-        let pathArray = [dirPath, recordingName]
-        let filePath = NSURL.fileURLWithPathComponents(pathArray)
-        print(filePath)
-        
-        let session = AVAudioSession.sharedInstance()
-        try! session.setCategory(AVAudioSessionCategoryPlayAndRecord)
-        
-        try! audioRecorder = AVAudioRecorder(URL: filePath!, settings: [:])
-        audioRecorder.delegate = self
-        audioRecorder.meteringEnabled = true
-        audioRecorder.prepareToRecord()
-        audioRecorder.record()
     }
 
     @IBAction func stopRecording(sender: AnyObject) {
         print("stop recording button pressed")
+        // disable the stop button, enable the record button and reset the tips label
+        configUI(.Stopped)
         
-        stopRecordingButton.enabled = false
-        recordButton.enabled = true
-        recordingLabel.text = "Tap to Record"
-        
+        // stop the recorder
         audioRecorder.stop()
         let session = AVAudioSession.sharedInstance()
         try! session.setActive(false)
+        print("isRecording:\(audioRecorder.recording)")
     }
     
     func audioRecorderDidFinishRecording(recorder: AVAudioRecorder, successfully flag: Bool) {
         print("AVAudioRecoder finished saving recording")
+        // check the flag if the recorder has saved the audio successfully
         if flag {
+            // all is done without problem, let's go to the PlaySounds view
             self.performSegueWithIdentifier("stopRecording", sender: audioRecorder.url)
         } else {
+            // not enough space or maybe we don't have the access to the path
+            // Need to tell the user try again or check the space
             print("Saving of recording failed!")
         }
     }
@@ -82,10 +110,31 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        
+        // Navigate to PlaySounds View
         if (segue.identifier == "stopRecording") {
+            // pass the recorded audio url to PlaySounds View
             let playSoundsVC = segue.destinationViewController as! PlaySoundsViewController
             let recordedAudioURL = sender as! NSURL
             playSoundsVC.recordedAudioURL = recordedAudioURL
+        }
+    }
+    
+    // set the sate of record button, stop button and text of tips label
+    func configUI(recordingState: RecordingState) {
+        switch recordingState {
+        case .Stopped:
+            recordButton.backgroundColor = UIColor.whiteColor()
+            stopRecordingButton.enabled = false
+            recordingLabel.text = "Tap to Record"
+        case .Recording:
+            recordButton.backgroundColor = UIColor.redColor()
+            stopRecordingButton.enabled = true
+            recordingLabel.text = "Recording in progress. Tap to Pause"
+        case .Paused:
+            recordButton.backgroundColor = UIColor.yellowColor()
+            stopRecordingButton.enabled = true
+            recordingLabel.text = "Tap to Continue Recording"
         }
     }
 }

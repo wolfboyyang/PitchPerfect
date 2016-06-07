@@ -19,32 +19,6 @@ class PlaySoundsViewController: UIViewController {
     @IBOutlet weak var reverbButton: UIButton!
     @IBOutlet weak var stopButton: UIButton!
     
-    @IBAction func playSoundForButton(sender: UIButton) {
-        print("Play Sound Button Pressed:\(sender.tag)")
-        switch ButtonType(rawValue: sender.tag)! {
-        case .Slow:
-            playSound(rate: 0.5)
-        case .Fast:
-            playSound(rate: 1.5)
-        case .Chipmunk:
-            playSound(pitch: 1000)
-        case .Vader:
-            playSound(pitch: -1000)
-        case .Echo:
-            playSound(echo: true)
-        case .Reverb:
-            playSound(reverb: true)
-        }
-        
-        configureUI(.Playing)
-    }
-    
-    @IBAction func stopButtonPressed(sender: AnyObject) {
-        print("stop audio Button Pressed")
-        
-        stopAudio()
-    }
-    
     var recordedAudioURL: NSURL!
     var audioFile: AVAudioFile!
     var audioEngine: AVAudioEngine!
@@ -59,7 +33,7 @@ class PlaySoundsViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        
+        // set url of the recorded audio file and open
         setupAudio()
     }
 
@@ -77,5 +51,34 @@ class PlaySoundsViewController: UIViewController {
         // Pass the selected object to the new view controller.
     }
     */
+    
+    /*! play with the sound effect identified by the tag of buttons
+     */
+    @IBAction func playSoundForButton(sender: UIButton) {
+        print("Play Sound Button Pressed:\(sender.tag)")
+        // check the tag of button to decide the sound effect
+        switch ButtonType(rawValue: sender.tag)! {
+        case .Slow:
+            playSound(rate: 0.5)
+        case .Fast:
+            playSound(rate: 1.5)
+        case .Chipmunk:
+            playSound(pitch: 1000)
+        case .Vader:
+            playSound(pitch: -1000)
+        case .Echo:
+            playSound(echo: true)
+        case .Reverb:
+            playSound(reverb: true)
+        }
+        // diable the play sound buttons and enable the stop button
+        configureUI(.Playing)
+    }
+    
+    @IBAction func stopButtonPressed(sender: AnyObject) {
+        print("stop audio Button Pressed")
+        // stop the auido and reset the state of buttons
+        stopAudio()
+    }
 
 }
